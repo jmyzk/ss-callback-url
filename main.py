@@ -5,8 +5,8 @@ import requests
 smartsheet_client = smartsheet.Smartsheet()
 
 function_call_settings = [
-    {'scopeObjectId': 3726089754988420,  'subscope': {'columnIds': [1047036782661508]}, 'function_to_call': "add_to_group_demo"},
-    {'scopeObjectId': 9999999999999999, 'function_to_call': "call_other_fuction"}
+    {'scopeObjectId': 3726089754988420,  'function_to_call': "add_to_group_demo", 'field': '?email='},
+    {'scopeObjectId': 9999999999999999, 'function_to_call': "call_other_fuction", 'field': '?sheet_id='}
     ]
 function_url = 'https://us-central1-smartsheet-api-functions.cloudfunctions.net/'
 
@@ -26,6 +26,12 @@ def ss_callback_url(request):
     elif request_json and "scopeObjectId" in request_json:
         sheet_id = request_json["scopeObjectId"]
         print("sheet_id : ", sheet_id)
+        for setting in function_call_settings:
+            if sheet_id == setting['scopeObjectId']:
+                function_to_call = setting['function_to_call']
+                print(function_to_call)
+                field = setting['field']
+                print(field)
         events = request_json["events"]
         for event in events:
             print('---- event -----')
@@ -45,7 +51,7 @@ def ss_callback_url(request):
                 print(f"Cell value: {cell.value}")
                 print(f"Cell display_value: {cell.display_value}")
                 # URL of the calleeFunction (replace with your function's URL)
-                url = 'https://us-central1-smartsheet-api-functions.cloudfunctions.net/add_to_group_demo'+'?email='+cell.display_value
+                url = function_url + function_to_call + field + cell.display_value
                 print(url)
                 response = requests.get(url)
                 if response.status_code == 200:
